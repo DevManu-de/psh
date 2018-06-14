@@ -62,15 +62,13 @@ static int ignore_IFSs(char *buffer, int count)
 {
 	do
 	{
-		if (!buffer[count])/* EOL */
+		if (!buffer[count]) /* EOL */
 			return -5;
-		if (buffer[count] != ' ' &&
-		buffer[count] != '\t')
+		if (buffer[count] != ' ' && buffer[count] != '\t')
 			return --count;
-	}while(++count);
-	return -6;/* Reaching here impossible */
+	} while (++count);
+	return -6; /* Reaching here impossible */
 }
-	
 
 /* Malloc a command, enNULL all elements, malloc the first parameter[] */
 int new_command(struct command **info)
@@ -85,9 +83,8 @@ int new_command(struct command **info)
 		free(*info);
 		return -1;
 	}
-	memset((*info)->parameters, 0,
-	       MAXARG); /* This will be used to detect whether an element is
-			   used or not */
+	memset((*info)->parameters, 0, MAXARG); /* This will be used to detect whether an element is
+						   used or not */
 	(*info)->parameters[0] = malloc(sizeof(char) * MAXEACHARG);
 	if ((*info)->parameters[0] == NULL)
 	{
@@ -116,52 +113,48 @@ void free_command(struct command *info)
 /* Malloc and fill a command with a buffer, free() buffer, return characters processed */
 int filpinfo(char *buffer, struct command *info)
 {
-#define ignIFS() \
-	do\
-	{\
-		int tmp;\
-		if((tmp=ignore_IFSs(buffer, count))==-5)\
-			goto done;\
-		count=tmp;\
-	}while(0)
+#define ignIFS()                                                                                                       \
+	do                                                                                                             \
+	{                                                                                                              \
+		int tmp;                                                                                               \
+		if ((tmp = ignore_IFSs(buffer, count)) == -5)                                                          \
+			goto done;                                                                                     \
+		count = tmp;                                                                                           \
+	} while (0)
 
-#define ignIFS_from_next_char() \
-	do\
-	{\
-		int tmp;\
-		if((tmp=ignore_IFSs(buffer, ++count))==-5)\
-			goto done;\
-		count=tmp;\
-	}while(0)
+#define ignIFS_from_next_char()                                                                                        \
+	do                                                                                                             \
+	{                                                                                                              \
+		int tmp;                                                                                               \
+		if ((tmp = ignore_IFSs(buffer, ++count)) == -5)                                                        \
+			goto done;                                                                                     \
+		count = tmp;                                                                                           \
+	} while (0)
 
-#define malloc_one(n)                                                          \
-	(getpos(info, pos)->parameters[n]) =                                   \
-	    malloc(sizeof(char) * MAXEACHARG);                                 \
+#define malloc_one(n)                                                                                                  \
+	(getpos(info, pos)->parameters[n]) = malloc(sizeof(char) * MAXEACHARG);                                        \
 	memset(getpos(info, pos)->parameters[n], 0, MAXEACHARG)
 
 /* Write the current char in buffer to current command, increase retcount
  * only if current not blank or 0 */
-#define write_current()                                                        \
-	do                                                                     \
-	{                                                                      \
-		getpos(info, pos)->parameters[paracount][parametercount++] =   \
-		    buffer[count];                                             \
-		if (strchr(" \t", buffer[count]) == NULL &&                    \
-		    buffer[count] != 0) /* current char not blank */           \
-			retcount++;                                            \
+#define write_current()                                                                                                \
+	do                                                                                                             \
+	{                                                                                                              \
+		getpos(info, pos)->parameters[paracount][parametercount++] = buffer[count];                            \
+		if (strchr(" \t", buffer[count]) == NULL && buffer[count] != 0) /* current char not blank */           \
+			retcount++;                                                                                    \
 	} /* Make the semicolon happy */ while (0)
 
 /* Write any char to current command, increase retcount only if c != 0 */
-#define write_char(c)                                                          \
-	do                                                                     \
-	{                                                                      \
-		getpos(info, pos)->parameters[paracount][parametercount++] =   \
-		    c;                                                         \
-		if (strchr(" \t", c) == NULL && c != 0)                        \
-			retcount++;                                            \
+#define write_char(c)                                                                                                  \
+	do                                                                                                             \
+	{                                                                                                              \
+		getpos(info, pos)->parameters[paracount][parametercount++] = c;                                        \
+		if (strchr(" \t", c) == NULL && c != 0)                                                                \
+			retcount++;                                                                                    \
 	} while (0)
 
-#define escape (count!=0 && buffer[count - 1] == '\\')
+#define escape (count != 0 && buffer[count - 1] == '\\')
 #define ignore (isInDoubleQuote == 1 || isInSingleQuote == 1 || escape)
 	/*
 		escape: determine whether the last character is '\\'
@@ -194,13 +187,11 @@ int filpinfo(char *buffer, struct command *info)
 		switch (buffer[count])
 		{
 			case '\'':
-				if (isInDoubleQuote ==
-				    1) /* Already in a "" quote, just write a '
-					*/
+				if (isInDoubleQuote == 1) /* Already in a "" quote, just write a '
+							   */
 					write_current();
 
-				else if (isInSingleQuote ==
-					 1) /* Get out of the quote */
+				else if (isInSingleQuote == 1) /* Get out of the quote */
 					isInSingleQuote = 0;
 				else
 				{
@@ -239,7 +230,7 @@ int filpinfo(char *buffer, struct command *info)
 					ignIFS();
 					write_char(0);
 					paracount++;
-					oldpc=parametercount;
+					oldpc = parametercount;
 					parametercount = 0;
 					malloc_one(paracount);
 				}
@@ -249,51 +240,48 @@ int filpinfo(char *buffer, struct command *info)
 					write_current();
 				else
 				{
-					if(parametercount == 0)/* Previously a blank reached */
+					if (parametercount == 0) /* Previously a blank reached */
 					{
-						parametercount=oldpc;
+						parametercount = oldpc;
 						free(getpos(info, pos)->parameters[paracount]);
 						getpos(info, pos)->parameters[paracount] = NULL;
 						paracount--;
 					}
-					if (ignore_IFSs(buffer, count + 1/* the char after & */) == -5)/* EOL */
+					if (ignore_IFSs(buffer, count + 1 /* the char after & */) == -5) /* EOL */
 					{
-						/* done */ 
-						info->flag |= BACKGROUND;/* cmd & \0 */
+						/* done */
+						info->flag |= BACKGROUND; /* cmd & \0 */
 						goto done;
 					}
 					else if (buffer[count + 1] == '&')
 					{
-						if(new_command(&(getpos(info, pos)->next)) == -1)
+						if (new_command(&(getpos(info, pos)->next)) == -1)
 						{
 							OUT2E("%s: filpinfo: malloc failed\n", argv0);
 							retcount = -1;
 							goto done;
 						}
 						info->flag |= RUN_AND;
-						if (ignore_IFSs(buffer, count + 2/* the char after || */) == -5)/* EOL */
+						if (ignore_IFSs(buffer, count + 2 /* the char after || */) ==
+						    -5) /* EOL */
 						{
 							char *cmdand_buf;
 #ifdef NO_READLINE
 							cmdand_buf = malloc(MAXLINE);
 							printf("> ");
-							fgets(cmdand_buf,
-							      MAXLINE, stdin);
+							fgets(cmdand_buf, MAXLINE, stdin);
 #else
-							cmdand_buf =
-							    readline("> ");
-							buffer = realloc(buffer, strlen(buffer) + strlen(cmdand_buf) +1 /* \0 */);
+							cmdand_buf = readline("> ");
+							buffer = realloc(buffer, strlen(buffer) + strlen(cmdand_buf) +
+										     1 /* \0 */);
 #endif
-							strncat(buffer,
-								cmdand_buf,
-								MAXLINE -
-								    count - 1);
+							strncat(buffer, cmdand_buf, MAXLINE - count - 1);
 							free(cmdand_buf);
 						}
 					}
 					else
 					{
-						if(new_command(&(getpos(info, pos)->next)) == -1)
+						if (new_command(&(getpos(info, pos)->next)) == -1)
 						{
 							/* malloc failed, cleanup */
 							OUT2E("%s: filpinfo: malloc failed\n", argv0);
@@ -313,13 +301,13 @@ int filpinfo(char *buffer, struct command *info)
 					write_current();
 				else
 				{
-					if(parametercount == 0)/* Previously a blank reached */
+					if (parametercount == 0) /* Previously a blank reached */
 					{
-						parametercount=oldpc;
+						parametercount = oldpc;
 						free(getpos(info, pos)->parameters[paracount]);
 						getpos(info, pos)->parameters[paracount] = NULL;
 					}
-					if(new_command(&(getpos(info, pos)->next)) == -1)
+					if (new_command(&(getpos(info, pos)->next)) == -1)
 					{
 						/* malloc failed, cleanup */
 						OUT2E("%s: filpinfo: malloc failed\n", argv0);
@@ -329,46 +317,40 @@ int filpinfo(char *buffer, struct command *info)
 					if (buffer[count + 1] == '|')
 					{
 						info->flag |= RUN_OR;
-						if (ignore_IFSs(buffer, count + 2/* the char after || */) == -5)/* EOL */ 
+						if (ignore_IFSs(buffer, count + 2 /* the char after || */) ==
+						    -5) /* EOL */
 						{
 							char *cmdor_buf;
 #ifdef NO_READLINE
 							cmdor_buf = malloc(MAXLINE);
 							printf("> ");
-							fgets(cmdor_buf,
-							      MAXLINE, stdin);
+							fgets(cmdor_buf, MAXLINE, stdin);
 #else
-							cmdor_buf =
-							    readline("> ");
-							buffer = realloc(buffer, strlen(buffer) + strlen(cmdor_buf) +1 /* \0 */);
+							cmdor_buf = readline("> ");
+							buffer = realloc(buffer, strlen(buffer) + strlen(cmdor_buf) +
+										     1 /* \0 */);
 #endif
-							strncat(
-							    buffer, cmdor_buf,
-							    MAXLINE - count -
-								1) /*\0*/;
+							strncat(buffer, cmdor_buf, MAXLINE - count - 1) /*\0*/;
 							free(cmdor_buf);
 						}
 					}
 					else
 					{
 						info->flag |= IS_PIPED;
-						if (ignore_IFSs(buffer, count + 2/* the char after | */) == -5)/* EOL */
+						if (ignore_IFSs(buffer, count + 2 /* the char after | */) ==
+						    -5) /* EOL */
 						{
 							char *pipe_buf;
 #ifdef NO_READLINE
 							pipe_buf = malloc(MAXLINE);
 							printf("> ");
-							fgets(pipe_buf, MAXLINE,
-							      stdin);
+							fgets(pipe_buf, MAXLINE, stdin);
 #else
-							pipe_buf =
-							    readline("> ");
-							buffer = realloc(buffer, strlen(buffer) + strlen(pipe_buf) +1 /* \0 */);
+							pipe_buf = readline("> ");
+							buffer = realloc(buffer, strlen(buffer) + strlen(pipe_buf) +
+										     1 /* \0 */);
 #endif
-							strncat(buffer,
-								pipe_buf,
-								MAXLINE -
-								    count - 1);
+							strncat(buffer, pipe_buf, MAXLINE - count - 1);
 							free(pipe_buf);
 						}
 					}
@@ -384,51 +366,35 @@ int filpinfo(char *buffer, struct command *info)
 					write_current();
 					break;
 				}
-				if (buffer[count + 1] != 0 &&
-				    buffer[count + 1] != '\n' &&
-				    buffer[count + 1] != '\t' &&
-				    buffer[count + 1] != ' ' &&
-				    buffer[count + 1] != '/') /* ~username */
+				if (buffer[count + 1] != 0 && buffer[count + 1] != '\n' && buffer[count + 1] != '\t' &&
+				    buffer[count + 1] != ' ' && buffer[count + 1] != '/') /* ~username */
 				{
-					char *username =
-					    malloc(sizeof(char) * 256);
+					char *username = malloc(sizeof(char) * 256);
 					char *posit;
-					strncpy(username, &(buffer[count + 1]),
-						256);
+					strncpy(username, &(buffer[count + 1]), 256);
 					posit = strchr(username, '/');
 					if (posit != NULL)
 					{
-						while (
-						    --posit !=
-						    username) /* Remove blank */
-							if (*posit != ' ' &&
-							    *posit != '\t')
+						while (--posit != username) /* Remove blank */
+							if (*posit != ' ' && *posit != '\t')
 							{
-								*(++posit) =
-								    0; /* Terminate
-									  the
-									  string
-									*/
+								*(++posit) = 0; /* Terminate
+										   the
+										   string
+										 */
 								break;
 							}
 					}
 					else
 					{
-						int usernamelen =
-						    strlen(username);
-						for (--usernamelen;
-						     usernamelen != 0;
-						     --usernamelen)
-							if (username[usernamelen] !=
-								' ' &&
-							    username[usernamelen] !=
-								'\t')
+						int usernamelen = strlen(username);
+						for (--usernamelen; usernamelen != 0; --usernamelen)
+							if (username[usernamelen] != ' ' &&
+							    username[usernamelen] != '\t')
 							{
-								username
-								    [++usernamelen] =
-									0; /* Terminate
-									      the
-									      string*/
+								username[++usernamelen] = 0; /* Terminate
+												the
+												string*/
 								break;
 							}
 					}
@@ -440,8 +406,7 @@ int filpinfo(char *buffer, struct command *info)
 						write_current();
 						break;
 					}
-					strncpy(info->parameters[paracount],
-						hdir, 4094 - parametercount);
+					strncpy(info->parameters[paracount], hdir, 4094 - parametercount);
 					count += strlen(username);
 					parametercount += strlen(hdir);
 					free(username);
@@ -449,16 +414,14 @@ int filpinfo(char *buffer, struct command *info)
 				else /* ~/ and ~ */
 				{
 					char *hdir = gethd();
-					strncpy(info->parameters[paracount],
-						hdir, 4094 - parametercount);
+					strncpy(info->parameters[paracount], hdir, 4094 - parametercount);
 					parametercount += strlen(hdir);
 				}
 				break;
 			case '\\':
 			{
 				int case_count;
-				for (case_count = 1; buffer[count];
-				     ++case_count, ++count)
+				for (case_count = 1; buffer[count]; ++case_count, ++count)
 				{
 					if (buffer[count] != '\\')
 					{
@@ -470,8 +433,7 @@ int filpinfo(char *buffer, struct command *info)
 						ones, the same behavior as in
 						bash */
 					{
-						if (case_count &
-						    1) /* Odd number */
+						if (case_count & 1) /* Odd number */
 							continue;
 						else /* Even number */
 							write_current();

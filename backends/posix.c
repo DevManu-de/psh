@@ -48,8 +48,7 @@ void sigchld_handler(int sig)
 			else if (pid < 0)
 			{
 				if (errno != ECHILD)
-					OUT2E("%s: waitpid error: %s", argv0,
-					      strerror(errno));
+					OUT2E("%s: waitpid error: %s", argv0, strerror(errno));
 			}
 			/*else:do nothing.*/
 			/*Not background processses has their waitpid() in
@@ -111,10 +110,7 @@ char *pshgetcwd(void)
 	return cwd;
 }
 
-int pshgethostname(char *hstnme, size_t len)
-{
-	return gethostname(hstnme, len);
-}
+int pshgethostname(char *hstnme, size_t len) { return gethostname(hstnme, len); }
 
 int pshgetuid(void) { return geteuid(); }
 
@@ -140,15 +136,13 @@ int do_run(struct command *info)
 				close(fileno(stdin));
 				dup2(pipe_fd[0], fileno(stdin));
 				close(pipe_fd[0]);
-				execvp(info->parameters[0],
-				       (char **)info->parameters);
+				execvp(info->parameters[0], (char **)info->parameters);
 			}
 			else
 			{
 				close(pipe_fd[0]);
 				close(pipe_fd[1]);
-				waitpid(ChdPid2, &last_command_status,
-					0); /*wait command*/
+				waitpid(ChdPid2, &last_command_status, 0); /*wait command*/
 			}
 		}
 
@@ -166,14 +160,12 @@ int do_run(struct command *info)
 
 			printf("[%d] %u\n", i + 1, ChdPid);
 			if (i == MAXPIDTABLE)
-				OUT2E("%s: Too much background processes\n",
-				      argv0);
+				OUT2E("%s: Too much background processes\n", argv0);
 			usleep(5000);
 		}
 		else
 		{
-			waitpid(ChdPid, &last_command_status,
-				0); /*wait command1*/
+			waitpid(ChdPid, &last_command_status, 0); /*wait command1*/
 		}
 	}
 	else /*command1*/
@@ -181,8 +173,7 @@ int do_run(struct command *info)
 
 		if (info->flag & IS_PIPED) /*command is not null*/
 		{
-			if (!(info->flag & OUT_REDIRECT) &&
-			    !(info->flag & OUT_REDIRECT_APPEND)) /* ONLY PIPED*/
+			if (!(info->flag & OUT_REDIRECT) && !(info->flag & OUT_REDIRECT_APPEND)) /* ONLY PIPED*/
 			{
 				close(pipe_fd[0]);
 				close(fileno(stdout));
@@ -195,13 +186,11 @@ int do_run(struct command *info)
 		}
 		else
 		{
-			if (info->flag &
-			    OUT_REDIRECT) /* OUT_REDIRECT WITHOUT PIPE*/
+			if (info->flag & OUT_REDIRECT) /* OUT_REDIRECT WITHOUT PIPE*/
 			{
 			}
-			if (info->flag &
-			    OUT_REDIRECT_APPEND) /* OUT_REDIRECT_APPEND WITHOUT
-						    PIPE*/
+			if (info->flag & OUT_REDIRECT_APPEND) /* OUT_REDIRECT_APPEND WITHOUT
+								 PIPE*/
 			{
 			}
 		}
@@ -209,19 +198,16 @@ int do_run(struct command *info)
 		if (info->flag & IN_REDIRECT)
 		{
 		}
-		if (execvp(info->parameters[0], (char **)info->parameters) ==
-		    -1)
+		if (execvp(info->parameters[0], (char **)info->parameters) == -1)
 		{
 			if (errno == ENOENT)
 			{
-				OUT2E("%s: %s: command not found\n", argv0,
-				      info->parameters[0]);
+				OUT2E("%s: %s: command not found\n", argv0, info->parameters[0]);
 				last_command_status = 127;
 			}
 			else
 			{
-				OUT2E("%s: %s: %s\n", argv0,
-				      info->parameters[0], strerror(errno));
+				OUT2E("%s: %s: %s\n", argv0, info->parameters[0], strerror(errno));
 				/* Exit the failed command child process */
 				last_command_status = 126;
 			}
